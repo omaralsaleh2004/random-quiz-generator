@@ -18,7 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class QuizService {
@@ -107,6 +110,8 @@ public class QuizService {
 
         Quiz quiz = quizRepo.findById(id).orElseThrow(() -> new NotFoundException("Quiz Not Found"));
 
+        UserDto userDto = userClient.getUserById(userId);
+
         QuizStatus quizStatus = quizStatus(quiz);
 
         if (quizStatus != QuizStatus.ACTIVE) {
@@ -157,6 +162,8 @@ public class QuizService {
         resultResponse.setResultStatus(savedAttempt.getResultStatus());
         resultResponse.setQuizId(quiz.getId());
         resultResponse.setQuizTitle(quiz.getTitle());
+        resultResponse.setUserId(userId);
+        resultResponse.setUsername(userDto.getFirstName() + " " + userDto.getLastName());
         resultResponse.setSubmittedAt(savedAttempt.getSubmittedAt());
 
 
@@ -296,5 +303,38 @@ public class QuizService {
 
         return ResponseEntity.ok(response);
 
+    }
+
+
+    public ResponseEntity<List<QuizAttemptResponse>> getAllUserAttempt(Integer userId) {
+        UserDto userDto = userClient.getUserById(userId);
+
+        List<QuizAttempt> quizAttempts = quizAttemptRepo.findByUserId(userId);
+        List<Integer> quizIds = quizAttempts.stream()
+                .map(QuizAttempt::getQuizId)
+                .toList();
+
+        List<Quiz> quizzes = quizRepo.findAllById(quizIds);
+
+        Map<Integer , Quiz> quizMap = quizzes.stream()
+                .collect(Collectors.toMap(Quiz::getId, q -> q));
+
+
+        List<QuizAttemptResponse> quizAttemptResponses = new ArrayList<>();
+        for (QuizAttempt quizAttempt : quizAttempts) {
+            QuizAttemptResponse quizAttemptResponse = new QuizAttemptResponse();
+            Quiz quiz = quizMap.get(quizAttempt.getQuizId());
+            quizAttemptResponse.setQuizId(quizAttempt.getQuizId());
+            quizAttemptResponse.setQuizTitle(quiz.getTitle());
+            quizAttemptResponse.setUserId(userId);
+            quizAttemptResponse.setTotal(quizAttempt.getTotal());
+            quizAttemptResponse.setScore(quizAttempt.getScore());
+            quizAttemptResponse.setResultStatus(quizAttempt.getResultStatus());
+            quizAttemptResponse.setSubmittedAt(quizAttempt.getSubmittedAt());
+            quizAttemptResponse.setUsername(userDto.getFirstName() + " " + userDto.getLastName());
+
+            quizAttemptResponses.add(quizAttemptResponse);
+        }
+        return ResponseEntity.ok(quizAttemptResponses);
     }
 }

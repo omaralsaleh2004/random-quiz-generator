@@ -31,4 +31,9 @@ public class QuizController {
     public QuizAttemptResponse getUserAttempt(@RequestHeader("X-User-Id")int userId,@PathVariable int quizId) {
         return quizService.getUserAttempt(userId , quizId);
     }
+
+    @GetMapping("/attempt")
+    public ResponseEntity<List<QuizAttemptResponse>> getAllUserAttempts(@RequestHeader("X-User-Id") Integer userId) {
+        return quizService.getAllUserAttempt(userId);
+    }
 }
