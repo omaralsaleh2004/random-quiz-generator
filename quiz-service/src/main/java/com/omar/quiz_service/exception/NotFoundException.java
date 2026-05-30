@@ -1,4 +1,4 @@
-package com.omar.quiz_service.Exception;
+package com.omar.quiz_service.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

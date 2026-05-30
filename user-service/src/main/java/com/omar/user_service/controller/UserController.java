@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -74,9 +77,9 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @GetMapping("/{quizId}/attempt")
-    public ResponseEntity<QuizAttemptResponse> getAttempt (@RequestHeader("X-User-Id") int userId,@PathVariable int quizId) {
-        return userService.getAttempt(userId,quizId);
+    @PostMapping("/all")
+    public Map<Integer , UserDto> getUsersByIds(@RequestBody List<Integer> userIds) {
+        return userService.getUsersByIds(userIds);
     }
 
 }

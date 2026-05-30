@@ -35,5 +35,9 @@ public class AdminQuizController {
     public ResponseEntity<ApiResponse<Quiz>> removeQuestionFromQuiz(@RequestHeader("X-User-Id") int userId , @PathVariable int quizId, @PathVariable int questionId) {
         return quizService.removeQuestionFromQuiz(userId , quizId , questionId);
     }
+    @GetMapping("/attempt/{quizId}")
+    public ResponseEntity<ApiResponse<List<QuizAttemptResponse>>> getAllQuizAttempts(@PathVariable int quizId) {
+        return quizService.getAllQuizAttempts(quizId);
+    }
 
 }

@@ -1,4 +1,4 @@
-package com.omar.quiz_service.Exception;
+package com.omar.quiz_service.exception;
 
 
 import com.omar.quiz_service.dto.ErrorRes;

@@ -1,10 +1,10 @@
 package com.omar.quiz_service.service;
 
 
-import com.omar.quiz_service.Exception.InvalidDateException;
-import com.omar.quiz_service.Exception.InvalidTimeException;
-import com.omar.quiz_service.Exception.NotFoundException;
-import com.omar.quiz_service.Exception.UnAuthorizedException;
+import com.omar.quiz_service.exception.InvalidDateException;
+import com.omar.quiz_service.exception.InvalidTimeException;
+import com.omar.quiz_service.exception.NotFoundException;
+import com.omar.quiz_service.exception.UnAuthorizedException;
 import com.omar.quiz_service.client.QuestionClient;
 import com.omar.quiz_service.client.UserClient;
 import com.omar.quiz_service.dto.*;
@@ -18,9 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -336,5 +334,46 @@ public class QuizService {
             quizAttemptResponses.add(quizAttemptResponse);
         }
         return ResponseEntity.ok(quizAttemptResponses);
+    }
+
+    public ResponseEntity<ApiResponse<List<QuizAttemptResponse>>> getAllQuizAttempts(int quizId) {
+
+        List<QuizAttempt> quizAttempts = quizAttemptRepo.findByQuizId(quizId);
+
+        if(quizAttempts.isEmpty()) {
+           return ResponseEntity.ok((new ApiResponse<>(Collections.emptyList(),"No Attempts Found")));
+        }
+
+        List<Integer> userIds = quizAttempts.stream()
+                .map(QuizAttempt::getUserId)
+                .distinct()
+                .toList();
+
+        Map<Integer , UserDto> userDtoMap = userClient.getUsersByIds(userIds);
+
+        List<QuizAttemptResponse> quizAttemptResponses = new ArrayList<>();
+
+        for(QuizAttempt quizAttempt : quizAttempts) {
+            UserDto userDto = userDtoMap.get(quizAttempt.getUserId());
+
+            QuizAttemptResponse quizAttemptResponse = new QuizAttemptResponse();
+            quizAttemptResponse.setQuizId(quizAttempt.getQuizId());
+            quizAttemptResponse.setUserId(userDto.getId());
+            quizAttemptResponse.setUsername(userDto.getFirstName() + " " + userDto.getLastName());
+            quizAttemptResponse.setScore(quizAttempt.getScore());
+            quizAttemptResponse.setTotal(quizAttempt.getTotal());
+            quizAttemptResponse.setResultStatus(quizAttempt.getResultStatus());
+            quizAttemptResponse.setSubmittedAt(quizAttempt.getSubmittedAt());
+            quizAttemptResponse.setQuizTitle("Test For now ");
+
+            quizAttemptResponses.add(quizAttemptResponse);
+        }
+
+        ApiResponse<List<QuizAttemptResponse>> response = new ApiResponse<>(
+                quizAttemptResponses,
+                "Users Result For Quiz Test For now"
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
